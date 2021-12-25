@@ -1,11 +1,10 @@
-import logo from './logo.svg';
 import './App.css';
 import {Container, Row, Col, Table, Form, FormControl, Button, InputGroup} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {v4} from 'uuid';
 
-const endpoint = "http://192.168.1.118:8080";
+const endpoint = "http://dev-node.fd93.me";
 
 function fetchJson(url, data, method) {
   var data_obj = {
@@ -46,7 +45,6 @@ class TodoItemModel { // literally identical to the server code
   titles.forEach( (title) => {
     items.push( new TodoItemModel( v4(), title ) );
   } )
-  console.log(items);
   return items;
 }
 
@@ -81,12 +79,11 @@ class TodoList extends React.Component {
   }
   
   onItemCheck(itemId, newState) {
-    return fetchJson(endpoint + "/" + itemId, {"state": newState}, "PATCH").then( (json) => {
-      this.setState( {items: json} )
-      json.filter( (item) => item.id === itemId )
-      var dataState = json.filter( (item) => item.id === itemId )[0].done;
-      return dataState;
-    } )
+    return fetchJson(endpoint + "/" + itemId, {"done": newState}, "PATCH");
+  }
+
+  onItemChangeTitle(itemId, newTitle) {
+    return fetchJson(endpoint + "/" + itemId, {"text": newTitle}, "PATCH");
   }
 
   componentDidMount() {
@@ -94,8 +91,8 @@ class TodoList extends React.Component {
   }
 
   render() {
-    const todoItems = this.state.items.map( (item) => <TodoItem onCheck={this.onItemCheck} onDelete={this.onItemDelete} key={item.id} id={item.id} title={item.text} done={item.done}/> )
-    return <Container> <Row> <Col> <Table hover><tbody> {todoItems} </tbody> </Table> </Col> </Row> <ListControls onCreate={this.onItemCreate}></ListControls></Container>;
+    const todoItems = this.state.items.map( (item) => <TodoItem onChangeTitle={this.onItemChangeTitle} onCheck={this.onItemCheck} onDelete={this.onItemDelete} key={item.id} id={item.id} title={item.text} done={item.done}/> )
+    return <Container> <Row> <Col> <Table hover><tbody> {todoItems} </tbody> </Table> </Col> </Row> <ListControls onCreate={this.onItemCreate} /></Container>;
   }
 }
 
@@ -145,24 +142,26 @@ class TodoItem extends React.Component {
   constructor(props) {
     super(props);
     this.id = props.id;
-    this.title = props.title;
     this.deleteMe = props.onDelete;
     this.onCheck = props.onCheck;
+    this.onChangeTitle = props.onChangeTitle;
     this.handleClick = this.handleClick.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
-    this.state = { done: props.done, editing: false };
+    this.handleTitleKeyPress = this.handleTitleKeyPress.bind(this);
+    this.handleInputClick = this.handleInputClick.bind(this);
+    this.handleTitleChange = this.handleTitleChange.bind(this);
+    this.state = { title: props.title, done: props.done, editing: false };
   }
 
   handleClick(event) {
     this.onCheck(this.id, !this.state.done).then( (newState) => {
-      this.setState({ done: newState })
+      this.setState({ done: newState.done })
     } )
   }
 
   handleDelete(event) {
     event.stopPropagation(); // stops the todo item from checking / unchecking
-    console.log(this.id);
     this.deleteMe(this.id);
   }
 
@@ -172,19 +171,32 @@ class TodoItem extends React.Component {
   }
 
   handleTitleKeyPress(event) {
+    if (event.key == "Enter") {
+      this.onChangeTitle(this.id, event.target.value).then( (newState) => {
+        this.setState( { title: newState.text, editing: false } );
+      } );
+    }
+  }
 
+  handleTitleChange(event) {
+    this.setState( {title: event.target.value});
+  }
+
+  handleInputClick(event) {
+    event.stopPropagation();
   }
   
   render() {
     var titleContent;
 
-    if (this.state.done) titleContent = <p><s>{this.title}</s></p>
-    else titleContent = <p>{this.title}</p>
+    if (this.state.editing) titleContent = <Form.Control autoFocus type="text" value={this.state.title} onChange={this.handleTitleChange} onKeyPress={this.handleTitleKeyPress} onClick={this.handleInputClick}></Form.Control>
+    else if (this.state.done) titleContent = <p><s>{this.state.title}</s></p>
+    else titleContent = <p>{this.state.title}</p>
 
     return <tr className>
       <td className='col-1' onClick={this.handleClick}><Form.Check checked={this.state.done} onChange={this.handleClick} type="checkbox"/></td>
       <td className='col-9' onClick={this.handleClick} >{titleContent}</td>
-      <td align="right" className='col-2' onClick={this.handleClick}><Button onClick={this.handleEdit} variant="success">Edit</Button> <Button onClick={this.handleDelete} variant="danger">Delete</Button></td>
+      <td align="right" className='col-2' onClick={this.handleClick}><Button className='button-scale' onClick={this.handleEdit} variant="success">Edit</Button> <Button className='button-scale' onClick={this.handleDelete} variant="danger">Delete</Button></td>
     </tr>
   }
 }

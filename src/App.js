@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {v4} from 'uuid';
 
-const endpoint = "http://dev-node.fd93.me";
+const endpoint = process.env.ENDPOINT;
 
 function fetchJson(url, data, method) {
   var data_obj = {

@@ -3,6 +3,8 @@ import {Container, Row, Col, Table, Form, FormControl, Button, InputGroup} from 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {v4} from 'uuid';
+import {Provider} from 'react-redux'
+import { createStore } from 'redux'
 
 const endpoint = process.env.ENDPOINT;
 
@@ -203,7 +205,9 @@ class TodoItem extends React.Component {
 
 function App() {
   return (
+    <Provider store={store}>
     <TodoList />
+    </Provider>
   );
 }
 

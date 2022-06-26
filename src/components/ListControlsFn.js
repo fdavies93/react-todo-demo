@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import {Container, Row, Col, Table, Form, FormControl, Button, InputGroup} from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
-import { add, remove } from '../features/todo/todoSlice'
+import { add } from '../features/todo/todoSlice'
 
 
 export const ListControls = (props) => {
   const [state, setState] = useState({title: ""})
-  
+  const dispatch = useDispatch()
   const onCreate = props.onCreate
 
-  const createTodo = (title) => {
-    const dispatch = useDispatch
-    dispatch( add( {title: title} ) )
+  const createTodo = () => {    
+    dispatch( add( {title: state.title} ) )
     onCreate(state.title)
+    setState( {title: ""} )
   }
 
   const handleCreate = (event) => {

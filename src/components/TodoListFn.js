@@ -7,28 +7,29 @@ import { add, remove } from '../features/todo/todoSlice'
 import { fetchJson } from '../utilitiies'
 
 function TodoList (props) {
-    const [state, setState] = useState({items: []});
+    // const [state, setState] = useState({items: []});
     const endpoint = props.endpoint;
-    //const items = useSelector( (state) => state.todos )
+    const items = useSelector( (state) => state.todos )
+    console.log(items)
     
 
-    useEffect(() => {
+    /*useEffect(() => {
         fetchJson(endpoint, {}, "GET").then( (json) => setState( { items: json } ) )
-    })
+    })*/
 
     const onItemDelete = (id) => {
         fetchJson(endpoint + "/" + id, {}, "DELETE").then( (json) => {
-            setState( {
-              items: state.items.filter( (item) => !json.includes(item.id) )
-            })
+            // setState( {
+            //   items: state.items.filter( (item) => !json.includes(item.id) )
+            // })
           } )
     }
 
     const onItemCreate = (title) => {
       fetchJson(endpoint, {"items": [title]}, "POST").then( (json) => {
-        setState( {
-          items: state.items.concat(json)
-        } )
+        // setState( {
+        //   items: state.items.concat(json)
+        // } )
       } )
     }
 
@@ -40,7 +41,7 @@ function TodoList (props) {
         return fetchJson(endpoint + "/" + itemId, {"text": newTitle}, "PATCH");
     }
 
-    const todoItems = state.items.map( (item) => <TodoItem onChangeTitle={onItemChangeTitle} onCheck={onItemCheck} onDelete={onItemDelete} key={item.id} id={item.id} title={item.text} done={item.done}/> )
+    const todoItems = items.map( (item) => <TodoItem onChangeTitle={onItemChangeTitle} onCheck={onItemCheck} onDelete={onItemDelete} key={item.id} id={item.id} title={item.text} done={item.done}/> )
     return <Container> <Row> <Col> <Table hover><tbody> {todoItems} </tbody> </Table> </Col> </Row> <ListControls onCreate={onItemCreate} /></Container>;
 }
 

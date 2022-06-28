@@ -2,20 +2,26 @@ import React, { useEffect, useState } from 'react';
 import {Container, Row, Col, Table, Form, FormControl, Button, InputGroup} from 'react-bootstrap';
 import TodoItem from './TodoItem';
 import ListControls from './ListControlsFn';
-import { useSelector } from 'react-redux';
-import { add, remove } from '../features/todo/todoSlice'
+import { useSelector, useDispatch } from 'react-redux';
+import { add, remove, set } from '../features/todo/todoSlice'
 import { fetchJson } from '../utilitiies'
 
 function TodoList (props) {
-    // const [state, setState] = useState({items: []});
+    const [loaded, setLoaded] = useState(false);
     const endpoint = props.endpoint;
     const items = useSelector( (state) => state.todos )
+    const dispatch = useDispatch()
     console.log(items)
-    
 
-    /*useEffect(() => {
-        fetchJson(endpoint, {}, "GET").then( (json) => setState( { items: json } ) )
-    })*/
+    useEffect( (state) => {
+
+      if (!loaded) {
+        fetchJson(endpoint, {}, "GET").then( (json) => {
+          setLoaded(true)
+          dispatch(set(json))
+        } )
+    }
+    } )
 
     const onItemDelete = (id) => {
         fetchJson(endpoint + "/" + id, {}, "DELETE").then( (json) => {

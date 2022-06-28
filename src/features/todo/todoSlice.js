@@ -1,9 +1,15 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchJson } from "../../utilitiies";
 
 const initialState = {
     todos: []
 }
+
+// export const getTodos = (endpoint) => (dispatch) => {
+//   return fetchJson(endpoint, { }, "GET").then ( (json) => {
+//     dispatch( set(json) )
+//   })
+// }
 
 export const todoSlice = createSlice({
   name: 'todo',
@@ -22,18 +28,24 @@ export const todoSlice = createSlice({
     },
     toggle: (state, action) => {
         state.todos.forEach( (todo) => { if (todo.id == action.payload.id) todo.done = !todo.done; } )
+    },
+    set: (state, action) => {
+      console.log(action.payload)
+      state.todos = action.payload
     }
   }
 })
 
-export const {add, remove, rename, toggle } = todoSlice.actions
+export const {add, remove, rename, toggle, set } = todoSlice.actions
 export default todoSlice.reducer
 
 export const addAsync = (title, endpoint) => (dispatch) => {
-    fetchJson(endpoint, {"items": [title]}, "POST").then( (json) => {
+    return fetchJson(endpoint, {"items": [title]}, "POST").then( (json) => {
         dispatch( add(json) )
     })
 }
+
+
 
 /* // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
